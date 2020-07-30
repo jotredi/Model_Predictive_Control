@@ -49,35 +49,40 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
-          // Fit a polynomial to the x,y points
+          // Transform x,y points to car frame
           VectorXd x_vals(ptsx.size());
           VectorXd y_vals(ptsy.size());
 
-          x_vals << ptsx[0], ptsx[1], ptsx[2], ptsx[3], ptsx[4], ptsx[5];
-          y_vals << ptsy[0], ptsy[1], ptsy[2], ptsy[3], ptsy[4], ptsy[5];
+          for(unsigned i=0; i<ptsx.size(); ++i){
+            double x = ptsx[i] - px;
+            double y = ptsy[i] - py;
+            x_vals[i] = x * cos(psi) + y * sin(psi);
+            y_vals[i] = y * cos(psi) - x * sin(psi);
+          }
 
+          // Fit a polynomial to the x,y points
           auto coeffs = polyfit(x_vals, y_vals, 3);
 
           // Calculate cross track error
-          double cte = polyeval(coeffs, px) - py;
+          double cte = polyeval(coeffs, 0);
 
           // Calculate orientation error
-          double derivative = 3*coeffs[3]*pow(px,2) + 2*coeffs[2]*px + coeffs[1];
-          double epsi = psi - atan(derivative);
+          double derivative = coeffs[1];
+          double epsi = -atan(derivative);
 
           // Create state vector
           VectorXd state(6);
-          state << px, py, psi, v/2.2369, cte, epsi;
+          state << 0, 0, 0, v/2.2369, cte, epsi;
 
           /**
            * TODO: Calculate steering angle and throttle using MPC.
            * Both are in between [-1, 1].
            */
 
-          auto controls = mpc.Solve(state, coeffs);
+          auto vars = mpc.Solve(state, coeffs);
 
-          double steer_value = controls[0] / deg2rad(25);
-          double throttle_value = controls[1];
+          double steer_value = vars[2][0] / deg2rad(25);
+          double throttle_value = vars[2][1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the
@@ -87,8 +92,8 @@ int main() {
           msgJson["throttle"] = throttle_value;
 
           // Display the MPC predicted trajectory
-          vector<double> mpc_x_vals;
-          vector<double> mpc_y_vals;
+          vector<double> mpc_x_vals = vars[0];
+          vector<double> mpc_y_vals = vars[1];
 
           /**
            * TODO: add (x,y) points to list here, points are in reference to
@@ -102,6 +107,11 @@ int main() {
           // Display the waypoints/reference line
           vector<double> next_x_vals;
           vector<double> next_y_vals;
+
+          for(unsigned i=0; i<mpc_x_vals.size(); ++i){
+            next_x_vals.push_back(mpc_x_vals[i]);
+            next_y_vals.push_back(polyeval(coeffs, mpc_x_vals[i]));
+          }
 
           /**
            * TODO: add (x,y) points to list here, points are in reference to
