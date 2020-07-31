@@ -22,6 +22,9 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 
+// Front length of the vehicle
+const double Lf = 2.67;
+
 int main() {
   uWS::Hub h;
 
@@ -48,6 +51,12 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+          // Transform the speed (mph) to m/s
+          v = v / 2.2369;
+
+          // Get current steering and throttle values
+          double steer_angle = j[1]["steering_angle"];
+          double throttle = j[1]["throttle"];
 
           // Transform x,y points to car frame
           VectorXd x_vals(ptsx.size());
@@ -60,29 +69,40 @@ int main() {
             y_vals[i] = y * cos(psi) - x * sin(psi);
           }
 
-          // Fit a polynomial to the x,y points
+          // Fit a 3rd order polynomial to the x,y points
           auto coeffs = polyfit(x_vals, y_vals, 3);
 
           // Calculate cross track error
           double cte = polyeval(coeffs, 0);
 
           // Calculate orientation error
-          double derivative = coeffs[1];
-          double epsi = -atan(derivative);
+          double epsi = -atan(coeffs[1]);
 
           // Create state vector
           VectorXd state(6);
-          state << 0, 0, 0, v/2.2369, cte, epsi;
+          state << 0, 0, 0, v, cte, epsi;
+
+          // Propagate the state 100 ms forward to account for latency
+          double delay = 0.1; // s
+
+          state[0] += v * delay;
+          state[2] += v / Lf * steer_angle * delay;
+          state[3] += throttle * delay;
+          state[4] += v * sin(epsi) * delay;
+          state[5] += v / Lf * steer_angle * delay;
 
           /**
-           * TODO: Calculate steering angle and throttle using MPC.
+           * Calculate steering angle and throttle using MPC.
            * Both are in between [-1, 1].
            */
 
           auto vars = mpc.Solve(state, coeffs);
 
-          double steer_value = vars[2][0] / deg2rad(25);
-          double throttle_value = vars[2][1];
+          // Get immediate control values to be executed
+          auto controls = vars[2];
+
+          double steer_value = controls[0] / deg2rad(25);
+          double throttle_value = controls[1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the
