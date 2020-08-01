@@ -58,6 +58,16 @@ int main() {
           double steer_angle = j[1]["steering_angle"];
           double throttle = j[1]["throttle"];
 
+          steer_angle *= -1.0;
+
+          // Propagate the state 100 ms forward to account for latency
+          double delay = 0.1; // s
+
+          px += v * cos(psi) * delay;
+          py += v * sin(psi) * delay;
+          psi += v / Lf * steer_angle * delay;
+          v += throttle * delay;
+
           // Transform x,y points to car frame
           VectorXd x_vals(ptsx.size());
           VectorXd y_vals(ptsy.size());
@@ -65,8 +75,8 @@ int main() {
           for(unsigned i=0; i<ptsx.size(); ++i){
             double x = ptsx[i] - px;
             double y = ptsy[i] - py;
-            x_vals[i] = x * cos(psi) + y * sin(psi);
-            y_vals[i] = y * cos(psi) - x * sin(psi);
+            x_vals[i] = x * cos(-psi) - y * sin(-psi);
+            y_vals[i] = x * sin(-psi) + y * cos(-psi);
           }
 
           // Fit a 3rd order polynomial to the x,y points
@@ -81,15 +91,6 @@ int main() {
           // Create state vector
           VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi;
-
-          // Propagate the state 100 ms forward to account for latency
-          double delay = 0.1; // s
-
-          state[0] += v * delay;
-          state[2] += v / Lf * steer_angle * delay;
-          state[3] += throttle * delay;
-          state[4] += v * sin(epsi) * delay;
-          state[5] += v / Lf * steer_angle * delay;
 
           /**
            * Calculate steering angle and throttle using MPC.
@@ -128,9 +129,17 @@ int main() {
           vector<double> next_x_vals;
           vector<double> next_y_vals;
 
-          for(unsigned i=0; i<mpc_x_vals.size(); ++i){
-            next_x_vals.push_back(mpc_x_vals[i]);
-            next_y_vals.push_back(polyeval(coeffs, mpc_x_vals[i]));
+          //for(unsigned i=0; i<mpc_x_vals.size(); ++i){
+          //  next_x_vals.push_back(mpc_x_vals[i]);
+          //  next_y_vals.push_back(polyeval(coeffs, mpc_x_vals[i]));
+          //}
+
+          double incr = 2.5;
+          unsigned num_points = 20;
+
+          for (unsigned i = 0; i < num_points; ++i) {
+            next_x_vals.push_back(incr * i);
+            next_y_vals.push_back(polyeval(coeffs, incr * i));
           }
 
           /**
