@@ -64,21 +64,21 @@ class FG_eval {
 
     // Reference state
     for (size_t t=0; t<N; ++t){
-      fg[0] += CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += 100 * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += 5 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 15 * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += 1 * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; t++) {
       fg[0] += 100 * CppAD::pow(vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t], 2);
+      fg[0] += 5 * CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
-      fg[0] += 1000 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
-      fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+      fg[0] += 50000 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 10 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 
 
@@ -167,7 +167,7 @@ std::vector<std::vector<double>> MPC::Solve(const VectorXd &state, const VectorX
   // SHOULD BE 0 besides initial state.
   Dvector vars(n_vars);
   for (size_t i = 0; i < n_vars; ++i) {
-    vars[i] = 0;
+    vars[i] = 0.0;
   }
   // Set the initial variable values
   vars[x_start] = x;
@@ -205,8 +205,8 @@ std::vector<std::vector<double>> MPC::Solve(const VectorXd &state, const VectorX
   Dvector constraints_lowerbound(n_constraints);
   Dvector constraints_upperbound(n_constraints);
   for (size_t i = 0; i < n_constraints; ++i) {
-    constraints_lowerbound[i] = 0;
-    constraints_upperbound[i] = 0;
+    constraints_lowerbound[i] = 0.0;
+    constraints_upperbound[i] = 0.0;
   }
   constraints_lowerbound[x_start] = x;
   constraints_lowerbound[y_start] = y;

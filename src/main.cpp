@@ -58,16 +58,6 @@ int main() {
           double steer_angle = j[1]["steering_angle"];
           double throttle = j[1]["throttle"];
 
-          steer_angle *= -1.0;
-
-          // Propagate the state 100 ms forward to account for latency
-          double delay = 0.1; // s
-
-          px += v * cos(psi) * delay;
-          py += v * sin(psi) * delay;
-          psi += v / Lf * steer_angle * delay;
-          v += throttle * delay;
-
           // Transform x,y points to car frame
           VectorXd x_vals(ptsx.size());
           VectorXd y_vals(ptsy.size());
@@ -75,8 +65,8 @@ int main() {
           for(unsigned i=0; i<ptsx.size(); ++i){
             double x = ptsx[i] - px;
             double y = ptsy[i] - py;
-            x_vals[i] = x * cos(-psi) - y * sin(-psi);
-            y_vals[i] = x * sin(-psi) + y * cos(-psi);
+            x_vals[i] = x * cos(psi) + y * sin(psi);
+            y_vals[i] = y * cos(psi) - x * sin(psi);
           }
 
           // Fit a 3rd order polynomial to the x,y points
@@ -87,6 +77,9 @@ int main() {
 
           // Calculate orientation error
           double epsi = -atan(coeffs[1]);
+
+          // Propagate the state 100 ms forward to account for latency
+          //double delay = 0.1; // s
 
           // Create state vector
           VectorXd state(6);
@@ -129,11 +122,6 @@ int main() {
           vector<double> next_x_vals;
           vector<double> next_y_vals;
 
-          //for(unsigned i=0; i<mpc_x_vals.size(); ++i){
-          //  next_x_vals.push_back(mpc_x_vals[i]);
-          //  next_y_vals.push_back(polyeval(coeffs, mpc_x_vals[i]));
-          //}
-
           double incr = 2.5;
           unsigned num_points = 20;
 
@@ -162,7 +150,7 @@ int main() {
           //   around the track with 100ms latency.
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE SUBMITTING.
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          //std::this_thread::sleep_for(std::chrono::milliseconds(100));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }  // end "telemetry" if
       } else {
