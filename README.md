@@ -30,7 +30,7 @@ The following kinematic equations can be used to predict the vehicle's future st
 
 ### Cross Track Error
 
-<img src="./imgs/cte.png" height=300>
+<img src="./imgs/cte.png" height=333>
 
 We can define the cross track error as the difference between the reference trajectory (yellow line) and the current vehicle position.
 
@@ -40,7 +40,7 @@ Assuming the reference line is represented as a polynomial f(x), we can express 
 
 ### Orientation Error
 
-<img src="./imgs/epsi.png" height=300 >
+<img src="./imgs/epsi.png" height=333 >
 
 The orientation error can be defined as the desired orientation subtracted from the current orientation:
 
