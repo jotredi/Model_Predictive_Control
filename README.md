@@ -55,7 +55,7 @@ The current orientation is known and the desired orientation (desired psi) can b
 
 ## Cost Function
 
-The cost function that has to be minimized contains multiple terms and consist of a sum of squares over all timesteps N.
+The cost function that has to be minimized contains multiple terms and consist of a sum of squares over all timesteps.
 
 #### Reference state
 
