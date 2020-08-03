@@ -87,3 +87,35 @@ Each value in the cost function is weighted with a term that has to be tuned.
 The actuators (throttle and steering values) are constrained and have to be considered in the optimization:
 
 <img src="./imgs/constraints.png" >
+
+## Prediction Horizon
+
+The prediction horizon is the duration over which future predictions are made (`T`).
+
+`T` is the product of `N` (number of timesteps) and `dt` (time between actuations).
+
+`T` should be a few seconds and it should be as large as possible to be able to predict in advance (like when a curve is coming) but not too large because the environment will change as we predict further.
+
+These as hyperparameters that need to be tuned for each model predictive controller.
+
+#### Number of Timesteps
+
+The number of timesteps `N` of the controller will also determine the number of variables that need to be optimized so a high value will imply more computational cost.
+
+#### Timestep duration
+
+MPC controller is approximating a continuous reference trajectory with discrete paths between actuations. A large value of `dt` will not approximate the continuous trajectory very accurately.
+
+Here we can see an example where the blue line is the reference trajectory and the red line the estimated trajectory:
+
+<img src="./imgs/dt.png" >
+
+## Latency
+
+In a real self driving car, the actuation commands won't execute instantly. There is a delay between the calculation of the command and the execution of it while it propagates through the system.
+
+This latency can be around 100 ms and it could be difficult to consider by some controllers like the PID controller.
+
+However MPC can model this latency because is calculating predicted values into the future.
+
+This latency could be considered propagating the current state of the vehicle 100 ms (or the duration of the latency) into the future using the vehicle model. Then, we can run the MPC using the propagated value as a starting point in the optimization.

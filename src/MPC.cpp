@@ -12,8 +12,8 @@ using Eigen::VectorXd;
 /**
  * TODO: Set the timestep length and duration
  */
-size_t N = 10;
-double dt = 0.1;
+size_t N = 15;
+double dt = 0.07;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -66,7 +66,7 @@ class FG_eval {
     for (size_t t=0; t<N; ++t){
       fg[0] += 5 * CppAD::pow(vars[cte_start + t], 2);
       fg[0] += 15 * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += 1 * CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += 10 * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
