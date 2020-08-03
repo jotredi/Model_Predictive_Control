@@ -1,6 +1,6 @@
 # Model Predictive Control
 
-<img src="./imgs/MPC.png" >
+<img src="./imgs/MPC.png" height=400>
 
 Model Predictive Control is used in self driving cars to calculate the optimal control commands (throttle and steering) that the vehicle needs to execute in order to follow a reference trajectory.
 
@@ -18,7 +18,7 @@ In the same fashion, a new optimal control value is calculated at every time ste
 
 In order to predict the future state of the vehicle, the [Kinematic Vehicle Model](https://borrelli.me.berkeley.edu/pdfpub/IV_KinematicMPC_jason.pdf) is used.
 
-<img src="./imgs/Kinematic-bicycle-model.png" >
+<img src="./imgs/Kinematic-bicycle-model.png" height=250>
 
 The state of the vehicle is represented by its current position (x, y), orientation, speed, cross track error and orientation error:
 
@@ -30,7 +30,7 @@ The following kinematic equations can be used to predict the vehicle's future st
 
 ### Cross Track Error
 
-<img src="./imgs/cte.png" >
+<img src="./imgs/cte.png" height=300>
 
 We can define the cross track error as the difference between the reference trajectory (yellow line) and the current vehicle position.
 
@@ -40,7 +40,7 @@ Assuming the reference line is represented as a polynomial f(x), we can express 
 
 ### Orientation Error
 
-<img src="./imgs/epsi.png" >
+<img src="./imgs/epsi.png" height=300 >
 
 The orientation error can be defined as the desired orientation subtracted from the current orientation:
 
@@ -50,7 +50,7 @@ The current orientation is known and the desired orientation (desired psi) can b
 
 <img src="./imgs/psi_des.png" >
 
-<img src="./imgs/tan_angle.png" >
+<img src="./imgs/tan_angle.png" height=250>
 
 
 ## Cost Function
@@ -108,7 +108,7 @@ MPC controller is approximating a continuous reference trajectory with discrete 
 
 Here we can see an example where the blue line is the reference trajectory and the red line the estimated trajectory:
 
-<img src="./imgs/dt.png" >
+<img src="./imgs/dt.png" height=333>
 
 ## Latency
 
