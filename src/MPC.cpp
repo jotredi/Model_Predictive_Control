@@ -12,8 +12,8 @@ using Eigen::VectorXd;
 /**
  * TODO: Set the timestep length and duration
  */
-size_t N = 15;
-double dt = 0.07;
+size_t N = 10;
+double dt = 0.1;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -28,7 +28,7 @@ double dt = 0.07;
 const double Lf = 2.67;
 
 // Reference velocity
-double ref_v = 15; // m/s
+double ref_v = 30;
 
 // The solver takes all the state variables and actuator
 // variables in a singular vector. Thus, we should to establish
@@ -64,20 +64,20 @@ class FG_eval {
 
     // Reference state
     for (size_t t=0; t<N; ++t){
-      fg[0] += 5 * CppAD::pow(vars[cte_start + t], 2);
-      fg[0] += 15 * CppAD::pow(vars[epsi_start + t], 2);
-      fg[0] += 10 * CppAD::pow(vars[v_start + t] - ref_v, 2);
+      fg[0] += 27 * CppAD::pow(vars[cte_start + t], 2);
+      fg[0] += 100 * CppAD::pow(vars[epsi_start + t], 2);
+      fg[0] += 0.5 * CppAD::pow(vars[v_start + t] - ref_v, 2);
     }
 
     // Minimize the use of actuators.
     for (size_t t = 0; t < N - 1; t++) {
-      fg[0] += 100 * CppAD::pow(vars[delta_start + t], 2);
+      fg[0] += 300 * CppAD::pow(vars[delta_start + t], 2);
       fg[0] += 5 * CppAD::pow(vars[a_start + t], 2);
     }
 
     // Minimize the value gap between sequential actuations.
     for (size_t t = 0; t < N - 2; t++) {
-      fg[0] += 50000 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+      fg[0] += 250000 * CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
       fg[0] += 10 * CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
     }
 

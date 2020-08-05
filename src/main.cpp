@@ -51,8 +51,6 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-          // Transform the speed (mph) to m/s
-          v = v / 2.2369;
 
           // Get current steering and throttle values
           double steer_angle = j[1]["steering_angle"];
@@ -65,8 +63,8 @@ int main() {
           for(unsigned i=0; i<ptsx.size(); ++i){
             double x = ptsx[i] - px;
             double y = ptsy[i] - py;
-            x_vals[i] = x * cos(psi) + y * sin(psi);
-            y_vals[i] = y * cos(psi) - x * sin(psi);
+            x_vals[i] = x * cos(-psi) - y * sin(-psi);
+            y_vals[i] = x * sin(-psi) + y * cos(-psi);
           }
 
           // Fit a 3rd order polynomial to the x,y points
@@ -78,12 +76,18 @@ int main() {
           // Calculate orientation error
           double epsi = -atan(coeffs[1]);
 
-          // Propagate the state 100 ms forward to account for latency
-          //double delay = 0.1; // s
-
           // Create state vector
           VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi;
+
+          // Propagate the state 100 ms forward to account for latency
+          double delay = 0.1; // s
+
+          state[0] += v * delay;
+          state[2] += v / Lf * -steer_angle * delay;
+          state[3] += throttle * delay;
+          state[4] += v * sin(epsi) * delay;
+          state[5] += v / Lf * -steer_angle * delay;
 
           /**
            * Calculate steering angle and throttle using MPC.
@@ -150,7 +154,7 @@ int main() {
           //   around the track with 100ms latency.
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE SUBMITTING.
-          //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }  // end "telemetry" if
       } else {
