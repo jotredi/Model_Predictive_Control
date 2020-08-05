@@ -96,7 +96,13 @@ The prediction horizon is the duration over which future predictions are made (`
 
 `T` should be a few seconds and it should be as large as possible to be able to predict in advance (like when a curve is coming) but not too large because the environment will change as we predict further.
 
-These as hyperparameters that need to be tuned for each model predictive controller.
+These are hyperparameters that need to be tuned for each model predictive controller. Concretely, I used 10 timesteps of 100 ms each:
+
+```c++
+// Timestep length and duration
+size_t N = 10;
+double dt = 0.1;
+```
 
 #### Number of Timesteps
 
@@ -116,6 +122,19 @@ In a real self driving car, the actuation commands won't execute instantly. Ther
 
 This latency can be around 100 ms and it could be difficult to consider by some controllers like the PID controller.
 
-However MPC can model this latency because is calculating predicted values into the future.
+However, MPC can model this latency because is calculating predicted values into the future.
 
-This latency could be considered propagating the current state of the vehicle 100 ms (or the duration of the latency) into the future using the vehicle model. Then, we can run the MPC using the propagated value as a starting point in the optimization.
+This latency could be considered propagating the current state of the vehicle 100 ms (or the duration of the latency) into the future using the vehicle model: 
+
+```c++
+// Propagate the state 100 ms forward to account for latency
+double delay = 0.1; // s
+
+state[0] += v * delay;
+state[2] += v / Lf * -steer_angle * delay;
+state[3] += throttle * delay;
+state[4] += v * sin(epsi) * delay;
+state[5] += v / Lf * -steer_angle * delay;
+```
+
+Then, we can run the MPC using the propagated value as a starting point in the optimization.
